@@ -2,6 +2,6 @@
 
 Written in Javascript.  
 
-See it in action [here:] (https://moshix.github.io/nqueenvisualizer)
+See it in action here: (https://moshix.github.io/nqueenvisualizer)  
 (c) 2024 by moshix  
 All rights reserved
