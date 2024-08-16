@@ -1,287 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>N-Queens Solver Visualization</title>
-        <style>
-            body {
-                background-color: black;
-                color: white;
-                font-family: Arial, sans-serif;
-                text-align: center;
-            }
-            table {
-                border-collapse: collapse;
-                margin: 20px auto;
-            }
-            td {
-                width: 50px;
-                height: 50px;
-                text-align: center;
-                vertical-align: middle;
-            }
-            .white {
-                background-color: #f0d9b5;
-            }
-            .black {
-                background-color: #b58863;
-            }
-            .queen {
-                width: 40px;
-                height: 40px;
-            }
-            #board-container {
-                display: flex;
-                justify-content: center;
-                align-items: flex-start;
-                gap: 40px;
-                margin-bottom: 20px; /* Added margin to keep score fixed */
-            }
-            #solution-container,
-            #move-log {
-                max-height: 500px;
-                overflow-y: auto; /* Ensure the container scrolls */
-                width: 200px;
-                text-align: left;
-                border: 2px solid white;
-                padding: 10px;
-            }
-            #board {
-                position: relative;
-            }
-            .rank,
-            .file {
-                position: absolute;
-                color: white;
-                font-weight: bold;
-            }
-            .rank {
-                left: -20px;
-            }
-            .file {
-                bottom: -20px;
-            }
-            #controls {
-                text-align: center;
-                margin: 20px;
-            }
-            #stats {
-                margin-top: 20px;
-                text-align: center; /* Ensure stats are centered */
-                width: 100%;
-                position: fixed; /* Fix the position */
-                bottom: 0; /* Align it to the bottom */
-            }
-            .highlight {
-                background-color: yellow;
-                color: black;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>N-Queens Solver Visualization</h1>
-        <div id="controls">
-            <input type="number" id="n" placeholder="Enter N" />
-            <button onclick="startSolver()">Solve</button>
-            <button onclick="stopSolver()">Stop</button>
-            <button
-                id="continueButton"
-                onclick="continueSolver()"
-                style="display: none"
-                class="highlight"
-            >
-                Continue
-            </button>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-Queens Solver Visualization</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .white {
+            background-color: #f0d9b5;
+        }
+        .black {
+            background-color: #b58863;
+        }
+        .queen {
+            width: 40px;
+            height: 40px;
+        }
+        #board-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            margin-bottom: 20px; /* Added margin to keep score fixed */
+        }
+        #solution-container, #move-log {
+            max-height: 500px;
+            overflow-y: auto; /* Ensure the container scrolls */
+            width: 200px;
+            text-align: left;
+            border: 2px solid white;
+            padding: 10px;
+        }
+        #board {
+            position: relative;
+        }
+        .rank, .file {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+        }
+        .rank {
+            left: -20px;
+        }
+        .file {
+            bottom: -20px;
+        }
+        #controls {
+            text-align: center;
+            margin: 20px;
+        }
+        #stats {
+            margin-top: 20px;
+            text-align: center; /* Ensure stats are centered */
+            width: 100%;
+            position: fixed; /* Fix the position */
+            bottom: 0; /* Align it to the bottom */
+        }
+        .highlight {
+            background-color: yellow;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1>N-Queens Solver Visualization</h1>
+    <div id="controls">
+        <input type="number" id="n" placeholder="Enter N" />
+        <button onclick="startSolver()">Solve</button>
+        <button onclick="stopSolver()">Stop</button>
+        <button id="continueButton" onclick="continueSolver()" style="display: none;" class="highlight">Continue</button>
+    </div>
+    <div id="board-container">
+        <div id="solution-container">
+            <h3>Solutions</h3>
+            <div id="solution-log"></div>
         </div>
-        <div id="board-container">
-            <div id="solution-container">
-                <h3>Solutions</h3>
-                <div id="solution-log"></div>
-            </div>
-            <div id="board"></div>
-            <div id="move-log">
-                <h3>Move Log</h3>
-                <div id="current-move-log"></div>
-            </div>
+        <div id="board"></div>
+        <div id="move-log">
+            <h3>Move Log</h3>
+            <div id="current-move-log"></div>
         </div>
-        <div id="stats">
-            <p>
-                Positions analyzed per second:
-                <span id="positions-per-second">0</span>
-            </p>
-            <p>Total positions analyzed: <span id="total-positions">0</span></p>
-        </div>
-        <script>
-            let timer;
-            let isRunning = false;
-            let currentMoveLog;
-            let solutionLog;
-            let currentMove = 0;
-            let steps;
-            let stepIndex = 0;
-            let table;
-            let n;
-            let useSolutionSvg = false;
-            let positionsAnalyzed = 0;
-            let positionsPerSecond = 0;
-            let interval;
-            let solutionFound = false;
+    </div>
+    <div id="stats">
+        <p>Positions analyzed per second: <span id="positions-per-second">0</span></p>
+        <p>Total positions analyzed: <span id="total-positions">0</span></p>
+    </div>
+    <script>
+        let timer;
+        let isRunning = false;
+        let currentMoveLog;
+        let solutionLog;
+        let currentMove = 0;
+        let steps;
+        let stepIndex = 0;
+        let table;
+        let n;
+        let useSolutionSvg = false;
+        let positionsAnalyzed = 0;
+        let positionsPerSecond = 0;
+        let interval;
+        let solutionFound = false;
 
-            async function startSolver() {
-                if (isRunning) return;
+        async function startSolver() {
+            if (isRunning) return;
 
-                n = document.getElementById("n").value;
-                const response = await fetch(`/solve?n=${n}`);
-                steps = await response.json();
-                currentMoveLog = document.getElementById("current-move-log");
-                solutionLog = document.getElementById("solution-log");
-                currentMoveLog.innerHTML = "";
-                solutionLog.innerHTML = "";
-                currentMove = 0;
-                stepIndex = 0;
-                positionsAnalyzed = 0;
-                solutionFound = false;
-                useSolutionSvg = false; // Reset this flag
-                visualizeSteps();
-                startStats();
+            n = document.getElementById("n").value;
+            const response = await fetch(`/solve?n=${n}`);
+            steps = await response.json();
+            currentMoveLog = document.getElementById('current-move-log');
+            solutionLog = document.getElementById('solution-log');
+            currentMoveLog.innerHTML = '';
+            solutionLog.innerHTML = '';
+            currentMove = 0;
+            stepIndex = 0;
+            positionsAnalyzed = 0;
+            solutionFound = false;
+            useSolutionSvg = false; // Reset this flag
+            visualizeSteps();
+            startStats();
+        }
+
+        function stopSolver() {
+            clearTimeout(timer);
+            clearInterval(interval);
+            isRunning = false;
+        }
+
+        function continueSolver() {
+            document.getElementById("continueButton").style.display = "none";
+            solutionFound = false;
+            useSolutionSvg = false;
+            isRunning = true;
+            nextStep();
+        }
+
+        function createBoard(n) {
+            const boardDiv = document.getElementById("board");
+            boardDiv.innerHTML = '';
+            const table = document.createElement("table");
+
+            for (let row = 0; row < n; row++) {
+                const tr = document.createElement("tr");
+                for (let col = 0; col < n; col++) {
+                    const td = document.createElement("td");
+                    td.className = (row + col) % 2 === 0 ? 'white' : 'black';
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+            boardDiv.appendChild(table);
+
+            for (let i = 0; i < n; i++) {
+                const rank = document.createElement("div");
+                rank.className = "rank";
+                rank.style.top = `${i * 50 + 25}px`;
+                rank.textContent = n - i;
+                boardDiv.appendChild(rank);
+
+                const file = document.createElement("div");
+                file.className = "file";
+                file.style.left = `${i * 50 + 25}px`;
+                file.textContent = String.fromCharCode(65 + i);
+                boardDiv.appendChild(file);
             }
 
-            function stopSolver() {
-                clearTimeout(timer);
-                clearInterval(interval);
-                isRunning = false;
-            }
+            return table;
+        }
 
-            function continueSolver() {
-                document.getElementById("continueButton").style.display =
-                    "none";
-                solutionFound = false;
-                useSolutionSvg = false;
-                isRunning = true;
-                nextStep();
-            }
+        function visualizeSteps() {
+            table = createBoard(n);
+            isRunning = true;
+            nextStep();
+        }
 
-            function createBoard(n) {
-                const boardDiv = document.getElementById("board");
-                boardDiv.innerHTML = "";
-                const table = document.createElement("table");
-
+        function nextStep() {
+            if (stepIndex < steps.length && isRunning) {
+                const board = steps[stepIndex].board;
+                positionsAnalyzed++;
                 for (let row = 0; row < n; row++) {
-                    const tr = document.createElement("tr");
                     for (let col = 0; col < n; col++) {
-                        const td = document.createElement("td");
-                        td.className =
-                            (row + col) % 2 === 0 ? "white" : "black";
-                        tr.appendChild(td);
-                    }
-                    table.appendChild(tr);
-                }
-                boardDiv.appendChild(table);
-
-                for (let i = 0; i < n; i++) {
-                    const rank = document.createElement("div");
-                    rank.className = "rank";
-                    rank.style.top = `${i * 50 + 25}px`;
-                    rank.textContent = n - i;
-                    boardDiv.appendChild(rank);
-
-                    const file = document.createElement("div");
-                    file.className = "file";
-                    file.style.left = `${i * 50 + 25}px`;
-                    file.textContent = String.fromCharCode(65 + i);
-                    boardDiv.appendChild(file);
-                }
-
-                return table;
-            }
-
-            function visualizeSteps() {
-                table = createBoard(n);
-                isRunning = true;
-                nextStep();
-            }
-
-            function nextStep() {
-                if (stepIndex < steps.length && isRunning) {
-                    const board = steps[stepIndex].board;
-                    positionsAnalyzed++;
-                    for (let row = 0; row < n; row++) {
-                        for (let col = 0; col < n; col++) {
-                            const cell = table.rows[row].cells[col];
-                            if (board[row][col] === 1) {
-                                cell.innerHTML = `<img src="${useSolutionSvg ? "queensolution.svg" : "queen.svg"}" class="queen" alt="Queen">`;
-                            } else {
-                                cell.innerHTML = "";
-                            }
-                        }
-                    }
-                    if (solutionFound) {
-                        logSolution(board);
-                        document.getElementById(
-                            "continueButton",
-                        ).style.display = "inline-block";
-                        isRunning = false;
-                    } else {
-                        logMove(board);
-                        stepIndex++;
-                        if (
-                            stepIndex < steps.length &&
-                            (stepIndex === steps.length - 1 ||
-                                steps[stepIndex + 1].board.toString() ===
-                                    steps[stepIndex].board.toString())
-                        ) {
-                            useSolutionSvg = true;
-                            solutionFound = true;
-                        }
-                        timer = setTimeout(nextStep, 250); // Speed up by 2x (500ms / 2 = 250ms)
-                    }
-                }
-            }
-
-            function logMove(board) {
-                currentMove++;
-                const notation = [];
-                for (let row = 0; row < board.length; row++) {
-                    for (let col = 0; col < board[row].length; col++) {
+                        const cell = table.rows[row].cells[col];
                         if (board[row][col] === 1) {
-                            notation.push(
-                                `${String.fromCharCode(65 + col)}${board.length - row}`,
-                            );
+                            cell.innerHTML = `<img src="${useSolutionSvg ? 'queensolution.svg' : 'queen.svg'}" class="queen" alt="Queen">`;
+                        } else {
+                            cell.innerHTML = '';
                         }
                     }
                 }
-                currentMoveLog.innerHTML += `<div>Move ${currentMove}: ${notation.join(", ")}</div>`;
-                currentMoveLog.parentNode.scrollTop =
-                    currentMoveLog.parentNode.scrollHeight; // Auto-scroll to bottom
+                if (solutionFound) {
+                    logSolution(board);
+                    document.getElementById("continueButton").style.display = "inline-block";
+                    isRunning = false;
+                } else {
+                    logMove(board);
+                    stepIndex++;
+                    if (stepIndex < steps.length && (stepIndex === steps.length - 1 || steps[stepIndex + 1].board.toString() === steps[stepIndex].board.toString())) {
+                        useSolutionSvg = true;
+                        solutionFound = true;
+                    }
+                    timer = setTimeout(nextStep, 250); // Speed up by 2x (500ms / 2 = 250ms)
+                }
             }
+        }
 
-            function logSolution(board) {
-                const notation = [];
-                for (let row = 0; row < board.length; row++) {
-                    for (let col = 0; col < board[row].length; col++) {
-                        if (board[row][col] === 1) {
-                            notation.push(
-                                `${String.fromCharCode(65 + col)}${board.length - row}`,
-                            );
-                        }
+        function logMove(board) {
+            currentMove++;
+            const notation = [];
+            for (let row = 0; row < board.length; row++) {
+                for (let col = 0; col < board[row].length; col++) {
+                    if (board[row][col] === 1) {
+                        notation.push(`${String.fromCharCode(65 + col)}${board.length - row}`);
                     }
                 }
-                solutionLog.innerHTML += `<div>Solution ${solutionLog.children.length + 1}: ${notation.join(", ")}</div>`;
             }
+            currentMoveLog.innerHTML += `<div>Move ${currentMove}: ${notation.join(', ')}</div>`;
+            currentMoveLog.parentNode.scrollTop = currentMoveLog.parentNode.scrollHeight; // Auto-scroll to bottom
+        }
 
-            function startStats() {
+        function logSolution(board) {
+            const notation = [];
+            for (let row = 0; row < board.length; row++) {
+                for (let col = 0; col < board[row].length; col++) {
+                    if (board[row][col] === 1) {
+                        notation.push(`${String.fromCharCode(65 + col)}${board.length - row}`);
+                    }
+                }
+            }
+            solutionLog.innerHTML += `<div>Solution ${solutionLog.children.length + 1}: ${notation.join(', ')}</div>`;
+        }
+
+        function startStats() {
+            positionsAnalyzed = 0;
+            positionsPerSecond = 0;
+            interval = setInterval(() => {
+                positionsPerSecond = positionsAnalyzed;
+                document.getElementById('positions-per-second').innerText = positionsPerSecond;
+                document.getElementById('total-positions').innerText = stepIndex;
                 positionsAnalyzed = 0;
-                positionsPerSecond = 0;
-                interval = setInterval(() => {
-                    positionsPerSecond = positionsAnalyzed;
-                    document.getElementById("positions-per-second").innerText =
-                        positionsPerSecond;
-                    document.getElementById("total-positions").innerText =
-                        stepIndex;
-                    positionsAnalyzed = 0;
-                }, 1000);
-            }
-        </script>
-    </body>
+            }, 1000);
+        }
+    </script>
+</body>
 </html>
