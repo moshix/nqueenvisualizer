@@ -106,7 +106,7 @@
         let currentMoveLog;
         let solutionLog;
         let currentMove = 0;
-        let steps;
+        let steps = [];
         let stepIndex = 0;
         let table;
         let n;
@@ -116,12 +116,15 @@
         let interval;
         let solutionFound = false;
 
-        async function startSolver() {
+        function startSolver() {
             if (isRunning) return;
 
-            n = document.getElementById("n").value;
-            const response = await fetch(`/solve?n=${n}`);
-            steps = await response.json();
+            n = parseInt(document.getElementById("n").value, 10);
+            if (isNaN(n) || n <= 0) {
+                alert("Please enter a valid number.");
+                return;
+            }
+
             currentMoveLog = document.getElementById('current-move-log');
             solutionLog = document.getElementById('solution-log');
             currentMoveLog.innerHTML = '';
@@ -130,7 +133,9 @@
             stepIndex = 0;
             positionsAnalyzed = 0;
             solutionFound = false;
-            useSolutionSvg = false; // Reset this flag
+            useSolutionSvg = false;
+            steps = [];
+            solveNQueens();
             visualizeSteps();
             startStats();
         }
@@ -190,7 +195,7 @@
 
         function nextStep() {
             if (stepIndex < steps.length && isRunning) {
-                const board = steps[stepIndex].board;
+                const board = steps[stepIndex];
                 positionsAnalyzed++;
                 for (let row = 0; row < n; row++) {
                     for (let col = 0; col < n; col++) {
@@ -209,7 +214,7 @@
                 } else {
                     logMove(board);
                     stepIndex++;
-                    if (stepIndex < steps.length && (stepIndex === steps.length - 1 || steps[stepIndex + 1].board.toString() === steps[stepIndex].board.toString())) {
+                    if (stepIndex < steps.length && (stepIndex === steps.length - 1 || JSON.stringify(steps[stepIndex + 1]) === JSON.stringify(steps[stepIndex]))) {
                         useSolutionSvg = true;
                         solutionFound = true;
                     }
@@ -253,6 +258,44 @@
                 document.getElementById('total-positions').innerText = stepIndex;
                 positionsAnalyzed = 0;
             }, 1000);
+        }
+
+        function solveNQueens() {
+            const board = Array.from({ length: n }, () => Array(n).fill(0));
+            backtrack(0, board);
+        }
+
+        function backtrack(row, board) {
+            if (row === n) {
+                steps.push(copyBoard(board));
+                return;
+            }
+            for (let col = 0; col < n; col++) {
+                if (isSafe(row, col, board)) {
+                    board[row][col] = 1;
+                    steps.push(copyBoard(board)); // Log the step
+                    backtrack(row + 1, board);
+                    board[row][col] = 0;
+                    steps.push(copyBoard(board)); // Log the step
+                }
+            }
+        }
+
+        function isSafe(row, col, board) {
+            for (let i = 0; i < row; i++) {
+                if (board[i][col] === 1) return false;
+            }
+            for (let i = row, j = col; i >= 0 && j >= 0; i--, j--) {
+                if (board[i][j] === 1) return false;
+            }
+            for (let i = row, j = col; i >= 0 && j < n; i--, j++) {
+                if (board[i][j] === 1) return false;
+            }
+            return true;
+        }
+
+        function copyBoard(board) {
+            return board.map(row => [...row]);
         }
     </script>
 </body>
